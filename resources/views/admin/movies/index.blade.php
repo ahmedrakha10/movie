@@ -3,12 +3,12 @@
 @section('content')
 
     <div>
-        <h2>{{__('Genres')}}</h2>
+        <h2>{{__('Movies')}}</h2>
     </div>
 
     <ul class="breadcrumb mt-2">
         <li class="breadcrumb-item"><a href="{{ route('admin.home') }}">{{__('Home')}}</a></li>
-        <li class="breadcrumb-item">{{__('Genres')}}</li>
+        <li class="breadcrumb-item">{{__('Movies')}}</li>
     </ul>
 
     <div class="row">
@@ -22,8 +22,8 @@
                     <div class="col-md-12">
 
 
-                        @if (auth()->user()->hasPermission('delete_genres'))
-                            <form method="post" action="{{ route('admin.genres.bulk_delete') }}"
+                        @if (auth()->user()->hasPermission('delete_movies'))
+                            <form method="post" action="{{ route('admin.movies.bulk_delete') }}"
                                   style="display: inline-block;">
                                 @csrf
                                 @method('delete')
@@ -46,6 +46,17 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <select id="genres" class="form-control select2" required>
+                                <option value="">{{__('Select all genres')}}</option>
+                                @foreach($genres as $genre)
+                                    <option value="{{$genre->id}}" {{$genre->id == request('genre_id') ? 'selected' : ''}}>{{$genre->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                 </div><!-- end of row -->
 
                 <div class="row">
@@ -54,7 +65,7 @@
 
                         <div class="table-responsive">
 
-                            <table class="table datatable" id="genres-table" style="width: 100%;">
+                            <table class="table datatable" id="movies-table" style="width: 100%;">
                                 <thead>
                                 <tr>
                                     <th>
@@ -65,10 +76,12 @@
                                             </label>
                                         </div>
                                     </th>
-                                    <th>{{__('Name')}}</th>
-                                    <th>{{__('Movies count')}}</th>
-                                    <th>{{__('Related movies')}}</th>
-                                    <th>{{__('Created at')}}</th>
+                                    <th>{{__('Poster')}}</th>
+                                    <th>{{__('Title')}}</th>
+                                    <th>{{__('Genre')}}</th>
+                                    <th>{{__('Vote')}}</th>
+                                    <th>{{__('Vote count')}}</th>
+                                    <th>{{__('Release date')}}</th>
                                     <th>{{__('Actions')}}</th>
                                 </tr>
                                 </thead>
@@ -91,8 +104,8 @@
 @push('scripts')
 
     <script>
-
-        let genresTable = $('#genres-table').DataTable({
+        let genre = '{{request('genre_id')}}';
+        let moviesTable = $('#movies-table').DataTable({
             dom: "tiplr",
             serverSide: true,
             processing: true,
@@ -100,17 +113,22 @@
                 "url": "{{ asset('admin_assets/datatable-lang/' . app()->getLocale() . '.json') }}"
             },
             ajax: {
-                url: '{{ route('admin.genres.data') }}',
+                url: '{{ route('admin.movies.data') }}',
+                data: function (d) {
+                    d.genre_id = genre;
+                }
             },
             columns: [
                 {data: 'record_select', name: 'record_select', searchable: false, sortable: false, width: '1%'},
-                {data: 'name', name: 'name'},
-                {data: 'movies_count', name: 'movies_count',searchable: false ,sortable: true},
-                {data: 'related_movies', name: 'related_movies',searchable: false,sortable: false},
-                {data: 'created_at', name: 'created_at', searchable: false},
+                {data: 'poster', name: 'poster', searchable: false,width: '10%'},
+                {data: 'title', name: 'title' ,width: '15%'},
+                {data: 'genres', name: 'genres', searchable: false},
+                {data: 'vote', name: 'vote', searchable: false},
+                {data: 'vote_count', name: 'vote_count', searchable: false},
+                {data: 'release_date', name: 'release_date', searchable: false},
                 {data: 'actions', name: 'actions', searchable: false, sortable: false, width: '20%'},
             ],
-            order: [[4, 'desc']],
+            order: [[5, 'desc']],
             drawCallback: function (settings) {
                 $('.record__select').prop('checked', false);
                 $('#record__select-all').prop('checked', false);
@@ -119,8 +137,12 @@
             }
         });
 
+        $('#genres').on('change', function () {
+            genre = this.value;
+            moviesTable.ajax.reload();
+        });
         $('#data-table-search').keyup(function () {
-            genresTable.search(this.value).draw();
+            moviesTable.search(this.value).draw();
         })
     </script>
 

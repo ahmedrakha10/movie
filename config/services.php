@@ -31,8 +31,9 @@ return [
     ],
 
     'tmdb' => [
-        'url'     => env('TMDB_URL'),
-        'api_key' => env('TMDB_API_KEY'),
+        'url'       => env('TMDB_URL'),
+        'api_key'   => env('TMDB_API_KEY'),
+        'max_pages' => env('TMDB_MAX_PAGES')
     ],
 
 ];
